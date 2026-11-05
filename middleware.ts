@@ -16,15 +16,21 @@ export async function middleware(request: NextRequest) {
       },
     },
   });
-  const { data: { user } } = await supabase.auth.getUser();
   const path = request.nextUrl.pathname;
-  if (!user && path !== '/login') {
+  // getSession no sale a la red salvo para renovar un token caducado, y este código
+  // corre también en cada prefetch. La validación real la hace cada página
+  // (requirePageUser). En /login sí se valida: con una sesión revocada, redirigir a
+  // la portada devolvería aquí y se entraría en bucle.
+  const signedIn = path === '/login'
+    ? !!(await supabase.auth.getUser()).data.user
+    : !!(await supabase.auth.getSession()).data.session;
+  if (!signedIn && path !== '/login') {
     const url = request.nextUrl.clone();
     url.pathname = '/login';
     url.search = '';
     return NextResponse.redirect(url);
   }
-  if (user && path === '/login') {
+  if (signedIn && path === '/login') {
     const url = request.nextUrl.clone();
     url.pathname = '/';
     return NextResponse.redirect(url);

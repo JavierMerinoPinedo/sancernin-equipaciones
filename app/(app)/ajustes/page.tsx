@@ -1,5 +1,5 @@
 import { headers } from 'next/headers';
-import { requireUser } from '@/lib/supabase/server.ts';
+import { requirePageUser } from '@/lib/supabase/server.ts';
 import { lastSync, loadTeams } from '@/lib/data.ts';
 import CopyLink from '@/components/CopyLink.tsx';
 import PasswordForm from '@/components/PasswordForm.tsx';
@@ -9,11 +9,11 @@ export const dynamic = 'force-dynamic';
 export const maxDuration = 60;
 
 export default async function SettingsPage() {
-  const { supabase, user } = await requireUser();
+  const { supabase, user } = await requirePageUser();
   const [{ data: profile }, teams, sync] = await Promise.all([
-    supabase.from('profiles').select('calendar_token').eq('user_id', user!.id).maybeSingle(),
-    loadTeams(supabase),
-    lastSync(supabase),
+    supabase.from('profiles').select('calendar_token').eq('user_id', user.id).maybeSingle(),
+    loadTeams(),
+    lastSync(),
   ]);
   const h = await headers();
   const origin = `${h.get('x-forwarded-proto') ?? 'https'}://${h.get('x-forwarded-host') ?? h.get('host')}`;
@@ -27,13 +27,13 @@ export default async function SettingsPage() {
         <p>Añade los partidos a Google Calendar o al calendario del iPhone. Se actualizan solos, con la equipación en el título (🔵 azul, ⚪ blanco). En el iPhone pulsa «Abrir». En Google Calendar ve a Otros calendarios → Desde URL y pega el enlace. Los enlaces son personales: no los compartas.</p>
         {base ? (
           <>
-            <h3 style={{ fontSize: 13, margin: '12px 0 4px' }}>Todo el club</h3>
+            <h3>Todo el club</h3>
             <CopyLink url={base} />
-            <details style={{ marginTop: 10 }}>
-              <summary style={{ fontSize: 14, cursor: 'pointer' }}>Un equipo concreto</summary>
+            <details>
+              <summary>Un equipo concreto</summary>
               {teams.map((t) => (
-                <div key={t.id} style={{ marginTop: 10 }}>
-                  <div style={{ fontSize: 13, fontWeight: 600 }}>{t.label}</div>
+                <div key={t.id} className="team-link">
+                  <h3>{t.label}</h3>
                   <CopyLink url={`${base}?team=${t.id}`} />
                 </div>
               ))}
@@ -53,8 +53,9 @@ export default async function SettingsPage() {
 
       <section className="panel">
         <h2>Tu cuenta</h2>
-        <p>Has entrado como <b>{user!.email}</b>.</p>
+        <p>Has entrado como <b>{user.email}</b>.</p>
         <PasswordForm />
+        <form action="/auth/salir" method="post"><button className="btn ghost danger wide">Cerrar sesión</button></form>
       </section>
     </main>
   );

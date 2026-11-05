@@ -6,6 +6,7 @@ import { decodeFnb, normalizeFnb } from '../lib/fnb.ts';
 import { diffMatches } from '../lib/diff.ts';
 import { buildIcs } from '../lib/ics.ts';
 import { startOfWeek, addDays, isoDate } from '../lib/dates.ts';
+import { project, rubberband, stepSpring } from '../lib/spring.ts';
 
 // Partido real de la FNB (6/11/2026, Peralta – San Cernin), recortado
 const RAW = {
@@ -92,4 +93,19 @@ test('semanas', () => {
   assert.equal(isoDate(startOfWeek(thu)), '2026-11-02');
   assert.equal(isoDate(addDays({ y: 2026, m: 12, d: 28 }, 7)), '2027-01-04');
   assert.equal(isoDate(startOfWeek({ y: 2026, m: 11, d: 8 })), '2026-11-02'); // domingo
+});
+
+test('física de las hojas', () => {
+  const settle = (damping: number) => {
+    const s = { x: 300, v: 0 };
+    let min = s.x;
+    for (let i = 0; i < 120; i++) { stepSpring(s, 0, damping, 0.3, 1 / 60); min = Math.min(min, s.x); }
+    return { s, min };
+  };
+  assert.ok(Math.abs(settle(1).s.x) < 0.5);           // llega al destino
+  assert.ok(settle(1).min >= -0.5);                   // sin rebote
+  assert.ok(settle(0.8).min < -0.5);                  // con rebote
+  assert.ok(project(1000) > 400);                     // un gesto rápido llega lejos
+  assert.equal(rubberband(0, 400), 0);
+  assert.ok(rubberband(400, 400) < 150);              // cuanto más se estira, menos sigue
 });

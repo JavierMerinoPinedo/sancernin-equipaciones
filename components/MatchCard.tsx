@@ -21,7 +21,7 @@ export default function MatchCard({ m, override, changes }: { m: MatchRow; overr
         <div>
           <div className={`time ${m.time_tbd ? 'tbd' : ''}`}>
             {m.time_tbd ? 'Hora por confirmar' : hhmm(dt)}
-            {score && <small style={{ fontSize: 13, color: '#6b7280' }}> ({score})</small>}
+            {score && <small> ({score})</small>}
           </div>
           <div className="cat">{m.category.replace(/^JDN - /, '')}{m.competition ? ` · ${m.competition}` : ''}</div>
         </div>
@@ -32,7 +32,7 @@ export default function MatchCard({ m, override, changes }: { m: MatchRow; overr
           ? <><span className="us">{m.our_team_name}</span><span className="vs">vs</span>{m.rival_name}</>
           : <>{m.rival_name}<span className="vs">vs</span><span className="us">{m.our_team_name}</span></>}
       </div>
-      {m.field_name && <div className="place">📍 <a href={map} target="_blank" rel="noopener noreferrer">{m.field_name}{m.field_town ? ` · ${m.field_town}` : ''}</a></div>}
+      {m.field_name && <div className="place"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 1a5 5 0 0 0-5 5c0 3.5 5 9 5 9s5-5.5 5-9a5 5 0 0 0-5-5Zm0 6.8A1.8 1.8 0 1 1 8 4.2a1.8 1.8 0 0 1 0 3.6Z" fill="currentColor" /></svg><a href={map} target="_blank" rel="noopener noreferrer">{m.field_name}{m.field_town ? ` · ${m.field_town}` : ''}</a></div>}
       <div className="kits">
         <div className="kit ours">
           <div className="figs"><Shirt colors={[kit.shirt.hex]} size={34} /><Shorts color={kit.pants.hex} size={26} /></div>

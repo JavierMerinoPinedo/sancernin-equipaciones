@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation';
 import { PALETTE, describeColors } from '@/lib/colors.ts';
 import { saveOverride, resetOverride } from '@/app/actions.ts';
 import { Shirt, Shorts } from './Figures.tsx';
+import Sheet from './Sheet.tsx';
 
 interface Props {
   rivalTeamId: string | null;
@@ -47,10 +48,8 @@ export default function RivalKit({ rivalTeamId, rivalName, shirt, pants, fnbShir
           <div className="k-sub">tocar para cambiar</div>
         </div>
       </button>
-      {open && rivalTeamId && (
-        <>
-          <div className="backdrop" onClick={() => setOpen(false)} />
-          <div className="sheet" role="dialog" aria-modal="true">
+      {rivalTeamId && (
+        <Sheet open={open} onClose={() => setOpen(false)}>
             <h2>{rivalName}</h2>
             <p>Según la FNB: <b>{describeColors(fnbShirt)}</b>. Si no es correcto, elige su camiseta. Se guarda para todo el club y para los próximos partidos contra este equipo.</p>
             <h3>Camiseta</h3>{swatches('shirt')}
@@ -62,8 +61,7 @@ export default function RivalKit({ rivalTeamId, rivalName, shirt, pants, fnbShir
                 {pending ? 'Guardando…' : 'Guardar'}
               </button>
             </div>
-          </div>
-        </>
+        </Sheet>
       )}
     </>
   );

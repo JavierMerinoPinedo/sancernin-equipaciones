@@ -1,3 +1,6 @@
+import 'server-only';
+import { cache } from 'react';
+import { redirect } from 'next/navigation';
 import { createServerClient, type CookieOptions } from '@supabase/ssr';
 
 type CookieList = { name: string; value: string; options: CookieOptions }[];
@@ -17,8 +20,20 @@ export async function createClient() {
   });
 }
 
-export async function requireUser() {
+/** Valida la sesión contra Supabase Auth. `cache` evita repetir la llamada dentro de un mismo render. */
+export const requireUser = cache(async () => {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
+  return { supabase, user };
+});
+
+/**
+ * Puerta de cada página. Los datos compartidos salen de la caché con la service
+ * role (sin RLS), así que toda página debe pasar por aquí antes de leerlos.
+ * Va en la página y no en el layout para no pagar esta llamada en cada prefetch.
+ */
+export async function requirePageUser() {
+  const { supabase, user } = await requireUser();
+  if (!user) redirect('/login');
   return { supabase, user };
 }

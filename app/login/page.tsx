@@ -7,7 +7,7 @@ export default function LoginPage() {
   return (
     <div className="login">
       <form className="panel" action={action}>
-        <h2>Equipaciones San Cernin</h2>
+        <h1>Equipaciones San Cernin</h1>
         <p>Entra con el usuario que te ha dado el club.</p>
         <div className="field">
           <label htmlFor="email">Email</label>
@@ -18,7 +18,7 @@ export default function LoginPage() {
           <input id="password" name="password" type="password" autoComplete="current-password" required />
         </div>
         {state?.error && <div className="err">{state.error}</div>}
-        <button className="btn" style={{ width: '100%' }} disabled={pending}>{pending ? 'Entrando…' : 'Entrar'}</button>
+        <button className="btn wide" disabled={pending}>{pending ? 'Entrando…' : 'Entrar'}</button>
       </form>
     </div>
   );

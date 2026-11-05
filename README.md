@@ -17,7 +17,7 @@ Tecnología: Next.js 15 (App Router) · Supabase (Postgres + Auth) · Vercel (ho
 ## Puesta en marcha (una sola vez, ~15 min)
 
 ### 1. Supabase
-1. Crea un proyecto en [supabase.com](https://supabase.com) (región Europa, plan gratuito).
+1. Crea un proyecto en [supabase.com](https://supabase.com) (región Europa, plan gratuito). Las funciones de Vercel deben estar en la región más cercana: se fija con `regions` en [`vercel.json`](vercel.json).
 2. **SQL Editor → New query**, pega el contenido de [`supabase/schema.sql`](supabase/schema.sql) y pulsa **Run**.
 3. **Authentication → Sign In / Providers**: deja activado *Email* y **desactiva "Allow new users to sign up"** (así solo entra quien tú des de alta).
 4. **Authentication → Users → Add user → Create new user**: crea los usuarios del club con email y contraseña (marca *Auto Confirm User*). Cada uno puede cambiar luego su contraseña en *Ajustes*.
@@ -67,5 +67,6 @@ supabase/schema.sql         Tablas y seguridad (RLS)
 ```
 
 ## Notas
+- **Caché:** los datos son iguales para todo el club y se guardan en la caché de datos de Next (`lib/data.ts`), leídos con la service role. Se invalidan al terminar cada carga y al corregir un color. Por eso toda página que los use debe llamar antes a `requirePageUser()`.
 - La API de la FNB (`esb.optimalwayconsulting.com`) es la misma que usa su web y no está documentada: si un día cambia, la carga fallará y en *Ajustes* se verá el error de la última carga. La dirección se puede cambiar con la variable `FNB_API_BASE` sin tocar código.
 - Para otro club basta con cambiar `FNB_CLUB_ID` (el número del enlace `pagina-club/?id=`).

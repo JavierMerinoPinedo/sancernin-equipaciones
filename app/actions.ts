@@ -1,5 +1,6 @@
 'use server';
-import { revalidatePath } from 'next/cache';
+import { revalidatePath, revalidateTag } from 'next/cache';
+import { DATA_TAG } from '@/lib/data.ts';
 import { requireUser } from '@/lib/supabase/server.ts';
 import { runSync } from '@/lib/sync.ts';
 
@@ -14,6 +15,7 @@ export async function saveOverride(rivalTeamId: string, rivalName: string, shirt
     updated_by: user.id, updated_at: new Date().toISOString(),
   });
   if (error) return { error: error.message };
+  revalidateTag(DATA_TAG);
   revalidatePath('/', 'layout');
   return { ok: true };
 }
@@ -23,6 +25,7 @@ export async function resetOverride(rivalTeamId: string) {
   if (!user) return { error: 'Sesión caducada' };
   const { error } = await supabase.from('rival_overrides').delete().eq('rival_team_id', rivalTeamId);
   if (error) return { error: error.message };
+  revalidateTag(DATA_TAG);
   revalidatePath('/', 'layout');
   return { ok: true };
 }

@@ -1,6 +1,8 @@
 import 'server-only';
+import { revalidateTag } from 'next/cache';
 import { createAdminClient } from './supabase/admin.ts';
 import { fetchSeason, normalizeFnb } from './fnb.ts';
+import { DATA_TAG } from './data.ts';
 import { diffMatches, type Existing } from './diff.ts';
 import { isoDate, todayMadrid } from './dates.ts';
 
@@ -12,6 +14,7 @@ export async function runSync(trigger: 'cron' | 'manual'): Promise<SyncResult> {
   const { data: run } = await db.from('sync_runs').insert({ trigger }).select('id').single();
   const finish = async (patch: Record<string, unknown>) => {
     if (run?.id) await db.from('sync_runs').update({ finished_at: new Date().toISOString(), ...patch }).eq('id', run.id);
+    revalidateTag(DATA_TAG);
   };
 
   try {

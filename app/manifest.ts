@@ -6,8 +6,8 @@ export default function manifest(): MetadataRoute.Manifest {
     short_name: 'Equipaciones',
     start_url: '/',
     display: 'standalone',
-    background_color: '#f4f6fb',
-    theme_color: '#0b1f5c',
+    background_color: '#f2f2f7',
+    theme_color: '#f2f2f7',
     icons: [{ src: '/icon.svg', sizes: 'any', type: 'image/svg+xml' }],
   };
 }
