@@ -21,7 +21,17 @@ export function decodeFnb(text: string): any {
 
 export async function fetchMonth(month: number, fetchImpl: typeof fetch = fetch): Promise<FnbMatch[]> {
   const url = `${FNB_API_BASE}/Match/getMatchClubMonth/${FNB_CLUB_ID}/${month}/T`;
-  const res = await fetchImpl(url, { cache: 'no-store', headers: { accept: 'application/json' } });
+  const res = await fetchImpl(url, {
+    cache: 'no-store',
+    // Nos presentamos igual que la web de la FNB, que es quien usa esta API
+    headers: {
+      accept: 'application/json, text/plain, */*',
+      origin: 'https://www.fnbaloncesto.com',
+      referer: 'https://www.fnbaloncesto.com/',
+      'user-agent': 'Mozilla/5.0 (compatible; SanCerninEquipaciones/1.0)',
+    },
+    signal: AbortSignal.timeout(20000),
+  });
   if (!res.ok) throw new Error(`FNB mes ${month}: HTTP ${res.status}`);
   const j = decodeFnb(await res.text());
   if (j?.result && j.result !== 'OK') throw new Error(`FNB mes ${month}: ${j.message || j.result}`);

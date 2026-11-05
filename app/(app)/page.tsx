@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { requireUser } from '@/lib/supabase/server.ts';
-import { loadOverrides, loadRange, loadRecentChanges, loadTeams } from '@/lib/data.ts';
+import { lastSync, loadOverrides, loadRange, loadRecentChanges, loadTeams } from '@/lib/data.ts';
+import SyncButton from '@/components/SyncButton.tsx';
 import { computeKit } from '@/lib/kit.ts';
 import { addDays, capitalize, diffDays, fmtLong, fmtShort, isoDate, parseDateParam, parseLocal, startOfWeek, todayMadrid } from '@/lib/dates.ts';
 import { weekSummary } from '@/lib/summary.ts';
@@ -9,6 +10,7 @@ import TeamSelect from '@/components/TeamSelect.tsx';
 import ShareBar from '@/components/ShareBar.tsx';
 
 export const dynamic = 'force-dynamic';
+export const maxDuration = 60;
 
 type SP = Promise<Record<string, string | undefined>>;
 
@@ -33,6 +35,9 @@ export default async function WeekPage({ searchParams }: { searchParams: SP }) {
     // Partidos sin hora al final de su día
     .sort((a, b) => (a.m.local_dt.slice(0, 10) + (a.m.time_tbd ? 'Z' : a.m.local_dt.slice(11))).localeCompare(b.m.local_dt.slice(0, 10) + (b.m.time_tbd ? 'Z' : b.m.local_dt.slice(11))));
   const changes = await loadRecentChanges(supabase, list.map((x) => x.m.id));
+  // Si la base de datos está vacía, explicamos por qué y ofrecemos la carga
+  const emptyDb = !all.length && !teams.length;
+  const sync = emptyDb ? await lastSync(supabase) : null;
 
   const weeks = Math.round(diffDays(ws, startOfWeek(today)) / 7);
   const title = weeks === 0 ? 'Esta semana' : weeks === 1 ? 'Próxima semana' : weeks === -1 ? 'Semana pasada' : weeks > 0 ? `Dentro de ${weeks} semanas` : `Hace ${-weeks} semanas`;
@@ -64,7 +69,19 @@ export default async function WeekPage({ searchParams }: { searchParams: SP }) {
         <Link className={`chip ${whiteOnly ? 'on' : ''}`} href={qs({ white: whiteOnly ? null : '1' })}>Solo blanco</Link>
       </div>
       <main className="wrap">
-        {!all.length ? (
+        {emptyDb ? (
+          <div className="panel" style={{ marginTop: 16 }}>
+            <h2>Todavía no hay partidos guardados</h2>
+            <p>
+              {!sync
+                ? 'Aún no se ha hecho ninguna carga desde la FNB. Pulsa el botón para hacer la primera (tarda unos segundos). Después se hará sola cada día.'
+                : sync.ok
+                  ? `La última carga terminó bien pero no trajo partidos (${sync.matches_seen ?? 0}). Prueba de nuevo.`
+                  : `La última carga falló: ${sync.error ?? 'error desconocido'}`}
+            </p>
+            <SyncButton />
+          </div>
+        ) : !all.length ? (
           <div className="empty">No hay partidos del club esta semana.</div>
         ) : (
           <>
