@@ -5,7 +5,7 @@ import { lastSync, loadAlerts, loadOverrides, loadRange, loadRecentChanges, load
 import SyncButton from '@/components/SyncButton.tsx';
 import { computeKit } from '@/lib/kit.ts';
 import { addDays, capitalize, diffDays, fmtLong, fmtShort, isoDate, parseDateParam, parseLocal, startOfWeek, todayMadrid, type LocalDate } from '@/lib/dates.ts';
-import { weekSummary } from '@/lib/summary.ts';
+import { whiteSummary } from '@/lib/summary.ts';
 import LinkPending from '@/components/LinkPending.tsx';
 import MatchCard from '@/components/MatchCard.tsx';
 import { Chevron } from '@/components/Figures.tsx';
@@ -79,6 +79,7 @@ async function WeekBody({ ws, we, team, awayOnly, whiteOnly, qs, today }: { ws: 
 
   const away = list.filter((x) => !x.m.is_home).length;
   const white = list.filter((x) => x.kit.white).length;
+  const summary = whiteSummary(list.map((x) => x.m), overrides, ws, we, todayMadrid());
   let lastDay = '';
 
   return (
@@ -88,7 +89,7 @@ async function WeekBody({ ws, we, team, awayOnly, whiteOnly, qs, today }: { ws: 
         <TeamSelect teams={teams} value={team} />
         <Link prefetch={false} className={`chip ${awayOnly ? 'on' : ''}`} href={qs({ away: awayOnly ? null : '1' })}>Solo fuera<LinkPending /></Link>
         <Link prefetch={false} className={`chip ${whiteOnly ? 'on' : ''}`} href={qs({ white: whiteOnly ? null : '1' })}>Solo blanco<LinkPending /></Link>
-        {!!list.length && <ShareBar text={weekSummary(list.map((x) => x.m), overrides, ws, we)} />}
+        {summary && <ShareBar text={summary} />}
       </section>
       <main id="main" className="wrap">
         {emptyDb ? (

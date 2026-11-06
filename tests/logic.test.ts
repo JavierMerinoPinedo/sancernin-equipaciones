@@ -8,6 +8,7 @@ import { buildIcs } from '../lib/ics.ts';
 import { startOfWeek, addDays, isoDate } from '../lib/dates.ts';
 import { project, rubberband, stepSpring } from '../lib/spring.ts';
 import { buildAlerts, whenLabel } from '../lib/alerts.ts';
+import { whiteSummary } from '../lib/summary.ts';
 
 // Partido real de la FNB (6/11/2026, Peralta – San Cernin), recortado
 const RAW = {
@@ -134,4 +135,22 @@ test('avisos', () => {
   assert.equal(whenLabel(5), 'En 5 días');
   const ov = new Map([['r', { rival_team_id: 'r', rival_name: 'R', shirt: '#FF0000', pants: null }]]);
   assert.equal(buildAlerts([mk('corregido', '2026-11-07', { rival_team_id: 'r', rival_shirt_raw: '#0000FF' })], ov, today).white.length, 0);
+});
+
+test('mensaje de WhatsApp', () => {
+  const today = { y: 2026, m: 11, d: 6 };
+  const from = { y: 2026, m: 11, d: 2 };
+  const to = { y: 2026, m: 11, d: 8 };
+  const base = { removed: false, time_tbd: false, is_home: false, rival_team_id: null, rival_pants_raw: null, local_score: null, category: 'JDN - Cadete Femenino', our_team_name: 'SAN CERNIN B', rival_name: 'BURLADA AZUL', field_name: 'Polideportivo Burlada' } as unknown as MatchRow;
+  const mk = (id: string, dt: string, x: Partial<MatchRow> = {}) => ({ ...base, id, local_dt: dt, rival_shirt_raw: '#0000FF', ...x }) as MatchRow;
+  const text = whiteSummary([
+    mk('pasado', '2026-11-05T12:00:00'),
+    mk('jugado', '2026-11-06T09:00:00', { local_score: 40 }),
+    mk('hoy', '2026-11-06T20:00:00'),
+    mk('azul', '2026-11-07T10:00:00', { rival_shirt_raw: '#FFFFFF' }),
+    mk('sin-hora', '2026-11-07T12:00:00', { time_tbd: true, our_team_name: 'SAN CERNIN C' }),
+  ], new Map(), from, to, today)!;
+  assert.equal(text, '🏀 *SAN CERNIN · Equipaciones*\n⚪ Juegan de blanco · 2 nov – 8 nov\n\n*Viernes, 6 de noviembre*\n• 20:00 Cadete Femenino – SAN CERNIN B\n\n*Sábado, 7 de noviembre*\n• --:-- Cadete Femenino – SAN CERNIN C\n');
+  assert.ok(!/BURLADA|Polideportivo|azul/i.test(text));
+  assert.equal(whiteSummary([mk('azul', '2026-11-07T10:00:00', { rival_shirt_raw: '#FFFFFF' })], new Map(), from, to, today), null);
 });

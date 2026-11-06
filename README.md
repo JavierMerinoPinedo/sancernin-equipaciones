@@ -9,7 +9,7 @@ App web (pensada para móvil) con el calendario de partidos del **Club Deportivo
 - **Colores de rival:** si la FNB no tiene el color o está mal, cualquier usuario puede corregirlo; vale para todo el club.
 - **Avisos de cambios:** cada carga compara con la anterior (hora, pabellón, rival, color, local/visitante, partidos nuevos o eliminados).
 - **Calendario .ics:** cada usuario tiene un enlace personal para suscribirse (todo el club o un equipo) en Google Calendar o iPhone.
-- **WhatsApp:** resumen de la semana listo para enviar.
+- **WhatsApp:** mensaje con los equipos que juegan de blanco en los partidos que quedan de la semana.
 
 Tecnología: Next.js 15 (App Router) · Supabase (Postgres + Auth) · Vercel (hosting + Cron).
 
