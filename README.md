@@ -4,7 +4,8 @@ App web (pensada para móvil) con el calendario de partidos del **Club Deportivo
 
 - **Regla:** en casa, azul/azul. Fuera, blanco/azul si el local viste camiseta azul (marino, azul o celeste); si no, azul/azul.
 - **Datos:** se cargan una vez al día desde la API pública que usa la web de la FNB (partidos + colores de cada equipo) y se guardan en Supabase.
-- **Vistas:** semana (con filtros por equipo, solo fuera, solo blanco), mes, cambios detectados y ajustes.
+- **Vistas:** semana (con filtros por equipo, solo fuera, solo blanco), mes, avisos y ajustes.
+- **Avisos:** próximos partidos de blanco, rivales sin color, horas sin fijar y cambios detectados, con contador en la pestaña.
 - **Colores de rival:** si la FNB no tiene el color o está mal, cualquier usuario puede corregirlo; vale para todo el club.
 - **Avisos de cambios:** cada carga compara con la anterior (hora, pabellón, rival, color, local/visitante, partidos nuevos o eliminados).
 - **Calendario .ics:** cada usuario tiene un enlace personal para suscribirse (todo el club o un equipo) en Google Calendar o iPhone.
@@ -55,13 +56,14 @@ npm test                     # pruebas de la lógica (colores, equipación, camb
 ```
 app/(app)/page.tsx          Semana
 app/(app)/mes/page.tsx      Mes
-app/(app)/cambios/page.tsx  Cambios detectados
+app/(app)/avisos/page.tsx   Avisos: de blanco, rival sin color, hora sin fijar y cambios
 app/(app)/ajustes/page.tsx  Enlaces .ics, carga manual, contraseña
 app/api/cron/sync           Carga diaria (protegida con CRON_SECRET)
 app/api/ics/[token]         Suscripción de calendario por usuario
 lib/fnb.ts                  Cliente de la API de la FNB
 lib/diff.ts                 Detección de cambios
 lib/kit.ts                  Regla de equipación
+lib/alerts.ts               Cálculo de avisos
 lib/colors.ts               Interpretación de colores ("#000080", "AZUL", "VERDE/NEGRO"…)
 supabase/schema.sql         Tablas y seguridad (RLS)
 ```

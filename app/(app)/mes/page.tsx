@@ -68,7 +68,7 @@ async function MonthBody({ y, mo, team, today, nextMonth, teamQs }: { y: number;
       <main id="main" className="wrap">
         <dl className="metrics two">
           <div><dt>Partidos</dt><dd>{monthMatches.length}</dd></div>
-          <div><dt>De blanco</dt><dd>{whiteTotal}</dd></div>
+          <div className="m-white"><dt>De blanco</dt><dd>{whiteTotal}</dd></div>
         </dl>
         <div className="month">
           {['L', 'M', 'X', 'J', 'V', 'S', 'D'].map((d) => <div key={d} className="wd">{d}</div>)}
@@ -76,7 +76,7 @@ async function MonthBody({ y, mo, team, today, nextMonth, teamQs }: { y: number;
             const d = addDays(gridStart, i);
             const k = isoDate(d);
             const e = byDay.get(k);
-            const cls = ['cell', d.m !== mo ? 'out' : '', sameDay(d, today) ? 'today' : '', e ? 'has' : ''].join(' ');
+            const cls = ['cell', d.m !== mo ? 'out' : '', sameDay(d, today) ? 'today' : '', e ? 'has' : '', e?.white ? 'white' : ''].join(' ');
             const href = `/?w=${isoDate(startOfWeek(d))}${teamQs}#d-${k}`;
             return (
               <Link key={k} href={href} className={cls} prefetch={false} aria-label={`${d.d} de ${monthName(d.m)}: ${e ? `${e.blue + e.white} partidos` : 'sin partidos'}`}>

@@ -1,7 +1,7 @@
 import { Suspense } from 'react';
 import Link from 'next/link';
 import { requirePageUser } from '@/lib/supabase/server.ts';
-import { lastSync, loadOverrides, loadRange, loadRecentChanges, loadTeams } from '@/lib/data.ts';
+import { lastSync, loadAlerts, loadOverrides, loadRange, loadRecentChanges, loadTeams } from '@/lib/data.ts';
 import SyncButton from '@/components/SyncButton.tsx';
 import { computeKit } from '@/lib/kit.ts';
 import { addDays, capitalize, diffDays, fmtLong, fmtShort, isoDate, parseDateParam, parseLocal, startOfWeek, todayMadrid, type LocalDate } from '@/lib/dates.ts';
@@ -11,6 +11,7 @@ import MatchCard from '@/components/MatchCard.tsx';
 import { Chevron } from '@/components/Figures.tsx';
 import TeamSelect from '@/components/TeamSelect.tsx';
 import ShareBar from '@/components/ShareBar.tsx';
+import WhiteAlert from '@/components/WhiteAlert.tsx';
 import Loading from './loading.tsx';
 
 export const dynamic = 'force-dynamic';
@@ -51,18 +52,20 @@ export default async function WeekPage({ searchParams }: { searchParams: SP }) {
         <Link className="arrow" href={qs({ w: isoDate(addDays(ws, 7)) })} aria-label="Semana siguiente"><Chevron dir="right" /><LinkPending /></Link>
       </section>
       <Suspense key={`${isoDate(ws)}|${team}|${awayOnly}|${whiteOnly}`} fallback={<Loading />}>
-        <WeekBody ws={ws} we={we} team={team} awayOnly={awayOnly} whiteOnly={whiteOnly} qs={qs} />
+        <WeekBody ws={ws} we={we} team={team} awayOnly={awayOnly} whiteOnly={whiteOnly} qs={qs} today={weeks === 0 ? today : null} />
       </Suspense>
     </>
   );
 }
 
-async function WeekBody({ ws, we, team, awayOnly, whiteOnly, qs }: { ws: LocalDate; we: LocalDate; team: string; awayOnly: boolean; whiteOnly: boolean; qs: Query }) {
+async function WeekBody({ ws, we, team, awayOnly, whiteOnly, qs, today }: { ws: LocalDate; we: LocalDate; team: string; awayOnly: boolean; whiteOnly: boolean; qs: Query; today: LocalDate | null }) {
   await requirePageUser();
-  const [all, overrides, teams] = await Promise.all([
+  const [all, overrides, teams, alerts] = await Promise.all([
     loadRange(`${isoDate(ws)}T00:00:00`, `${isoDate(addDays(ws, 7))}T00:00:00`, team || null),
     loadOverrides(),
     loadTeams(),
+    // Solo en la semana actual: es el vistazo al abrir la app
+    today ? loadAlerts(today, team || null) : null,
   ]);
   const withKit = all.map((m) => ({ m, kit: computeKit(m, m.rival_team_id ? overrides.get(m.rival_team_id) : null) }));
   const list = withKit
@@ -80,6 +83,7 @@ async function WeekBody({ ws, we, team, awayOnly, whiteOnly, qs }: { ws: LocalDa
 
   return (
     <>
+      {alerts && !emptyDb && <WhiteAlert items={alerts.white} />}
       <section className="filters" aria-label="Filtros">
         <TeamSelect teams={teams} value={team} />
         <Link prefetch={false} className={`chip ${awayOnly ? 'on' : ''}`} href={qs({ away: awayOnly ? null : '1' })}>Solo fuera<LinkPending /></Link>
@@ -105,9 +109,9 @@ async function WeekBody({ ws, we, team, awayOnly, whiteOnly, qs }: { ws: LocalDa
           <>
             <dl className="metrics">
               <div><dt>Partidos</dt><dd>{list.length}</dd></div>
-              <div><dt>En casa</dt><dd>{list.length - away}</dd></div>
-              <div><dt>Fuera</dt><dd>{away}</dd></div>
-              <div><dt>De blanco</dt><dd>{white}</dd></div>
+              <div className="m-home"><dt>En casa</dt><dd>{list.length - away}</dd></div>
+              <div className="m-away"><dt>Fuera</dt><dd>{away}</dd></div>
+              <div className="m-white"><dt>De blanco</dt><dd>{white}</dd></div>
             </dl>
             {!list.length && <div className="empty">Ningún partido con estos filtros.</div>}
             {list.map(({ m }) => {

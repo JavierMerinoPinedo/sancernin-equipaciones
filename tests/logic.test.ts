@@ -7,6 +7,7 @@ import { diffMatches } from '../lib/diff.ts';
 import { buildIcs } from '../lib/ics.ts';
 import { startOfWeek, addDays, isoDate } from '../lib/dates.ts';
 import { project, rubberband, stepSpring } from '../lib/spring.ts';
+import { buildAlerts, whenLabel } from '../lib/alerts.ts';
 
 // Partido real de la FNB (6/11/2026, Peralta – San Cernin), recortado
 const RAW = {
@@ -108,4 +109,29 @@ test('física de las hojas', () => {
   assert.ok(project(1000) > 400);                     // un gesto rápido llega lejos
   assert.equal(rubberband(0, 400), 0);
   assert.ok(rubberband(400, 400) < 150);              // cuanto más se estira, menos sigue
+});
+
+test('avisos', () => {
+  const today = { y: 2026, m: 11, d: 6 };
+  const base = { removed: false, time_tbd: false, is_home: false, rival_team_id: null, rival_pants_raw: null, local_score: null } as unknown as MatchRow;
+  const mk = (id: string, date: string, x: Partial<MatchRow>) => ({ ...base, id, local_dt: `${date}T12:00:00`, ...x }) as MatchRow;
+  const a = buildAlerts([
+    mk('pasado', '2026-11-05', { rival_shirt_raw: '#0000FF' }),
+    mk('jugado', '2026-11-07', { rival_shirt_raw: '#0000FF', local_score: 50 }),
+    mk('blanco', '2026-11-07', { rival_shirt_raw: '#0000FF' }),
+    mk('lejos', '2026-12-20', { rival_shirt_raw: '#0000FF' }),
+    mk('fuera-plazo', '2027-02-01', { rival_shirt_raw: '#0000FF' }),
+    mk('sin-color', '2026-11-08', { rival_shirt_raw: null, time_tbd: true }),
+    mk('sin-color-lejos', '2026-12-01', { rival_shirt_raw: null }),
+    mk('casa', '2026-11-08', { is_home: true, rival_shirt_raw: '#0000FF' }),
+  ], new Map(), today);
+  assert.deepEqual(a.white.map((x) => x.m.id), ['blanco', 'lejos']);
+  assert.deepEqual(a.unknown.map((x) => x.m.id), ['sin-color']);
+  assert.deepEqual(a.tbd.map((x) => x.m.id), ['sin-color']);
+  assert.equal(a.count, 2);                                 // un partido con dos avisos cuenta una vez
+  assert.equal(a.white[0].when, 'Mañana');
+  assert.equal(whenLabel(0), 'Hoy');
+  assert.equal(whenLabel(5), 'En 5 días');
+  const ov = new Map([['r', { rival_team_id: 'r', rival_name: 'R', shirt: '#FF0000', pants: null }]]);
+  assert.equal(buildAlerts([mk('corregido', '2026-11-07', { rival_team_id: 'r', rival_shirt_raw: '#0000FF' })], ov, today).white.length, 0);
 });

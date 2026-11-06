@@ -2,6 +2,8 @@ import 'server-only';
 import { unstable_cache } from 'next/cache';
 import { createAdminClient } from './supabase/admin.ts';
 import type { MatchRow, Override } from './kit.ts';
+import { buildAlerts, WHITE_HORIZON_DAYS } from './alerts.ts';
+import { addDays, isoDate, type LocalDate } from './dates.ts';
 
 export interface ChangeRow { id: number; match_id: string; changed_at: string; field: string; old_value: string | null; new_value: string | null }
 export interface Team { id: string; name: string; category: string; label: string }
@@ -74,13 +76,22 @@ export async function loadRecentChanges(ids: string[], days = 7) {
 export const loadChangeFeed = cached(async (sinceIso: string) => {
   const { data, error } = await createAdminClient()
     .from('match_changes')
-    .select('id, changed_at, field, old_value, new_value, match:matches(id, local_dt, time_tbd, category, our_team_name, rival_name, is_home, removed)')
+    .select('id, changed_at, field, old_value, new_value, match:matches(id, local_dt, time_tbd, category, our_team_id, our_team_name, rival_name, is_home, removed)')
     .gte('changed_at', sinceIso)
     .order('changed_at', { ascending: false })
     .limit(300);
   if (error) throw error;
   return (data ?? []) as unknown as ChangeFeedRow[];
 }, 'change-feed');
+
+/** Avisos de los partidos por jugar. Reutiliza la caché de loadRange. */
+export async function loadAlerts(today: LocalDate, team?: string | null) {
+  const [matches, overrides] = await Promise.all([
+    loadRange(`${isoDate(today)}T00:00:00`, `${isoDate(addDays(today, WHITE_HORIZON_DAYS + 1))}T00:00:00`, team),
+    loadOverrides(),
+  ]);
+  return buildAlerts(matches, overrides, today);
+}
 
 export const lastSync = cached(async () => {
   const { data, error } = await createAdminClient().from('sync_runs').select('*').not('finished_at', 'is', null).order('started_at', { ascending: false }).limit(1).maybeSingle();

@@ -1,5 +1,5 @@
 'use client';
-import { useState, useTransition } from 'react';
+import { useState, useTransition, type CSSProperties } from 'react';
 import { useRouter } from 'next/navigation';
 import { PALETTE, describeColors } from '@/lib/colors.ts';
 import { saveOverride, resetOverride } from '@/app/actions.ts';
@@ -45,7 +45,7 @@ export default function RivalKit({ rivalTeamId, rivalName, shirt, pants, fnbShir
 
   return (
     <>
-      <button type="button" className="kit theirs" onClick={() => rivalTeamId && setOpen(true)} disabled={!rivalTeamId}
+      <button type="button" className="kit theirs" style={shirt[0] ? { '--c': shirt[0] } as CSSProperties : undefined} onClick={() => rivalTeamId && setOpen(true)} disabled={!rivalTeamId}
         aria-label={`Rival: ${describeColors(shirt)}. Cambiar el color de ${rivalName}`}>
         <div className="figs"><Shirt colors={shirt} size={30} /><Shorts color={pants[0]} size={22} /></div>
         <div>
