@@ -1,7 +1,8 @@
 'use client';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import PullToRefresh from './PullToRefresh.tsx';
 
 const LINKS = [
   { href: '/', label: 'Semana', icon: 'M4 5.5h16M7 3v4m10-4v4M4.75 5h14.5c.414 0 .75.336.75.75v13.5a.75.75 0 0 1-.75.75H4.75a.75.75 0 0 1-.75-.75V5.75C4 5.336 4.336 5 4.75 5ZM4 10h16M8 14h8' },
@@ -15,15 +16,18 @@ const isActive = (href: string, path: string) => (href === '/' ? path === '/' : 
 export default function Nav() {
   const path = usePathname();
   const [alerts, setAlerts] = useState(0);
+  const [pulls, setPulls] = useState(0);
+  const pulled = useCallback(() => setPulls((n) => n + 1), []);
   useEffect(() => {
-    fetch('/api/alerts').then((r) => (r.ok ? r.json() : null)).then((d) => setAlerts(d?.count ?? 0)).catch(() => { /* sin contador */ });
-  }, [path]);
+    fetch('/api/alerts', { cache: pulls ? 'reload' : 'default' }).then((r) => (r.ok ? r.json() : null)).then((d) => setAlerts(d?.count ?? 0)).catch(() => { /* sin contador */ });
+  }, [path, pulls]);
   const title = LINKS.find((l) => isActive(l.href, path))?.label ?? 'San Cernin';
   return (
     <>
       <header className="title">
         <small translate="no">San Cernin</small>
         <h1>{title}</h1>
+        <PullToRefresh onRefresh={pulled} />
       </header>
       <nav className="tabs" aria-label="Secciones">
         <div className="brand" translate="no">

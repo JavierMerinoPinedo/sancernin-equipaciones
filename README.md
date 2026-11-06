@@ -69,6 +69,7 @@ supabase/schema.sql         Tablas y seguridad (RLS)
 ```
 
 ## Notas
+- **Tirar para recargar:** vuelve a pedir la página desde el servidor, pero no llama a la FNB; la carga desde la FNB sigue siendo la diaria o la de *Ajustes*.
 - **Caché:** los datos son iguales para todo el club y se guardan en la caché de datos de Next (`lib/data.ts`), leídos con la service role. Se invalidan al terminar cada carga y al corregir un color. Por eso toda página que los use debe llamar antes a `requirePageUser()`.
 - La API de la FNB (`esb.optimalwayconsulting.com`) es la misma que usa su web y no está documentada: si un día cambia, la carga fallará y en *Ajustes* se verá el error de la última carga. La dirección se puede cambiar con la variable `FNB_API_BASE` sin tocar código.
 - Para otro club basta con cambiar `FNB_CLUB_ID` (el número del enlace `pagina-club/?id=`).
