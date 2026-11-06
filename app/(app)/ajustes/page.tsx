@@ -21,7 +21,7 @@ export default async function SettingsPage() {
   const when = (s: string) => new Date(s).toLocaleString('es-ES', { timeZone: 'Europe/Madrid', dateStyle: 'medium', timeStyle: 'short' });
 
   return (
-    <main className="wrap">
+    <main id="main" className="wrap">
       <section className="panel">
         <h2>Suscribirse al calendario</h2>
         <p>Añade los partidos a Google Calendar o al calendario del iPhone. Se actualizan solos, con la equipación en el título (🔵 azul, ⚪ blanco). En el iPhone pulsa «Abrir». En Google Calendar ve a Otros calendarios → Desde URL y pega el enlace. Los enlaces son personales: no los compartas.</p>

@@ -9,7 +9,7 @@ export default function CopyLink({ url }: { url: string }) {
       <code>{url}</code>
       <button className="btn ghost small" onClick={async () => {
         try { await navigator.clipboard.writeText(url); setOk(true); setTimeout(() => setOk(false), 1500); } catch { /* copia manual */ }
-      }}>{ok ? '✓' : 'Copiar'}</button>
+      }} aria-live="polite">{ok ? 'Copiado ✓' : 'Copiar'}</button>
       <a className="btn small" href={webcal}>Abrir</a>
     </div>
   );

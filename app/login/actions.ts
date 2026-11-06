@@ -8,6 +8,6 @@ export async function signIn(_prev: { error?: string } | undefined, form: FormDa
   if (!email || !password) return { error: 'Escribe tu email y contraseña.' };
   const supabase = await createClient();
   const { error } = await supabase.auth.signInWithPassword({ email, password });
-  if (error) return { error: 'Email o contraseña incorrectos.' };
+  if (error) return { error: 'Email o contraseña incorrectos. Revísalos o pide acceso al club.' };
   redirect('/');
 }

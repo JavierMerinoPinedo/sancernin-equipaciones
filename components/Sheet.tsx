@@ -8,7 +8,7 @@ import { project, rubberband, stepSpring } from '@/lib/spring.ts';
  * pantalla, así que se puede agarrar o invertir en cualquier momento. Se dibuja en
  * <body> para no depender de los contextos de apilado de la tarjeta que la abre.
  */
-export default function Sheet({ open, onClose, children }: { open: boolean; onClose: () => void; children: ReactNode }) {
+export default function Sheet({ open, onClose, label, children }: { open: boolean; onClose: () => void; label: string; children: ReactNode }) {
   const [mounted, setMounted] = useState(false);
   const sheet = useRef<HTMLDivElement>(null);
   const scrim = useRef<HTMLDivElement>(null);
@@ -63,7 +63,7 @@ export default function Sheet({ open, onClose, children }: { open: boolean; onCl
       if (s.fresh) { s.x = s.height; s.v = 0; s.fresh = false; paint(); sheet.current.focus({ preventScroll: true }); }
       animate(0, 1, 0.35);
     } else {
-      animate(s.height, 1, 0.3, () => { s.fresh = true; setMounted(false); opener.current?.focus({ preventScroll: true }); });
+      animate(s.height, 1, 0.3, () => { s.fresh = true; setMounted(false); });
     }
   }, [open, mounted]); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -73,8 +73,17 @@ export default function Sheet({ open, onClose, children }: { open: boolean; onCl
     const root = document.documentElement;
     const previous = root.style.overflow;
     root.style.overflow = 'hidden';
+    // Con la hoja abierta, teclado y lectores de pantalla no salen de ella
+    const behind = [...document.body.children].filter((el) => el !== sheet.current && el !== scrim.current);
+    behind.forEach((el) => el.setAttribute('inert', ''));
     window.addEventListener('keydown', onKey);
-    return () => { root.style.overflow = previous; window.removeEventListener('keydown', onKey); cancelAnimationFrame(m.current.raf); };
+    return () => {
+      root.style.overflow = previous;
+      behind.forEach((el) => el.removeAttribute('inert'));
+      opener.current?.focus({ preventScroll: true }); // solo se puede con el fondo ya activo
+      window.removeEventListener('keydown', onKey);
+      cancelAnimationFrame(m.current.raf);
+    };
   }, [mounted]);
 
   const down = (e: PointerEvent<HTMLDivElement>) => {
@@ -108,8 +117,11 @@ export default function Sheet({ open, onClose, children }: { open: boolean; onCl
   return createPortal(
     <>
       <div ref={scrim} className="backdrop" onClick={onClose} />
-      <div ref={sheet} className="sheet" role="dialog" aria-modal="true" tabIndex={-1}>
+      <div ref={sheet} className="sheet" role="dialog" aria-modal="true" aria-label={label} tabIndex={-1}>
         <div className="grab" onPointerDown={down} onPointerMove={move} onPointerUp={up} onPointerCancel={up}><i /></div>
+        <button type="button" className="icon-btn" aria-label="Cerrar" onClick={() => close.current()}>
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" /></svg>
+        </button>
         <div className="sheet-body">{children}</div>
       </div>
     </>,

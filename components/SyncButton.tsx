@@ -14,8 +14,8 @@ export default function SyncButton() {
         setMsg('error' in r && r.error ? { error: r.error } : { ok: ('msg' in r && r.msg) || 'Hecho' });
         router.refresh();
       })}>{pending ? 'Actualizando desde la FNB…' : 'Actualizar ahora desde la FNB'}</button>
-      {msg?.ok && <div className="ok">{msg.ok}</div>}
-      {msg?.error && <div className="err">{msg.error}</div>}
+      {msg?.ok && <div className="ok" role="status">{msg.ok}</div>}
+      {msg?.error && <div className="err" role="alert">{msg.error}</div>}
     </>
   );
 }

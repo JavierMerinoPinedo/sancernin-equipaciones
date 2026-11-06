@@ -16,6 +16,10 @@ export function Shirt({ colors, size = 30 }: { colors: string[]; size?: number }
   );
 }
 
+export function Chevron({ dir }: { dir: 'left' | 'right' }) {
+  return <svg viewBox="0 0 24 24" aria-hidden="true"><path d={dir === 'left' ? 'M15 5l-7 7 7 7' : 'M9 5l7 7-7 7'} /></svg>;
+}
+
 export function Shorts({ color, size = 24 }: { color?: string; size?: number }) {
   return (
     <svg width={size} height={size * 0.75} viewBox="0 0 64 48" aria-hidden="true">

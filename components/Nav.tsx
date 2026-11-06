@@ -17,19 +17,27 @@ export default function Nav() {
   return (
     <>
       <header className="title">
-        <small>San Cernin</small>
+        <small translate="no">San Cernin</small>
         <h1>{title}</h1>
       </header>
       <nav className="tabs" aria-label="Secciones">
-        {LINKS.map((l) => {
-          const on = isActive(l.href, path);
-          return (
-            <Link key={l.href} href={l.href} className={on ? 'on' : ''} aria-current={on ? 'page' : undefined}>
-              <svg viewBox="0 0 24 24" aria-hidden="true"><path d={l.icon} /></svg>
-              {l.label}
-            </Link>
-          );
-        })}
+        <div className="brand" translate="no">
+          <img src="/icon.svg" width={28} height={28} alt="" />
+          <div>San Cernin<small>Equipaciones</small></div>
+        </div>
+        <ul>
+          {LINKS.map((l) => {
+            const on = isActive(l.href, path);
+            return (
+              <li key={l.href}>
+                <Link href={l.href} className={on ? 'on' : ''} aria-current={on ? 'page' : undefined}>
+                  <svg viewBox="0 0 24 24" aria-hidden="true"><path d={l.icon} /></svg>
+                  {l.label}
+                </Link>
+              </li>
+            );
+          })}
+        </ul>
       </nav>
     </>
   );

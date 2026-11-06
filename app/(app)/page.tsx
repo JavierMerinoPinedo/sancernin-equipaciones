@@ -8,6 +8,7 @@ import { addDays, capitalize, diffDays, fmtLong, fmtShort, isoDate, parseDatePar
 import { weekSummary } from '@/lib/summary.ts';
 import LinkPending from '@/components/LinkPending.tsx';
 import MatchCard from '@/components/MatchCard.tsx';
+import { Chevron } from '@/components/Figures.tsx';
 import TeamSelect from '@/components/TeamSelect.tsx';
 import ShareBar from '@/components/ShareBar.tsx';
 import Loading from './loading.tsx';
@@ -40,15 +41,15 @@ export default async function WeekPage({ searchParams }: { searchParams: SP }) {
 
   return (
     <>
-      <div className="period">
-        <Link className="arrow" href={qs({ w: isoDate(addDays(ws, -7)) })} aria-label="Semana anterior">‹<LinkPending /></Link>
+      <section className="period" aria-label="Semana">
+        <Link className="arrow" href={qs({ w: isoDate(addDays(ws, -7)) })} aria-label="Semana anterior"><Chevron dir="left" /><LinkPending /></Link>
         <div className="lbl">
           <b>{title}</b>
           <span>{fmtShort(ws)} – {fmtShort(we)}</span>
           {weeks !== 0 && <><br /><Link href={qs({ w: null })}>Volver a esta semana</Link></>}
         </div>
-        <Link className="arrow" href={qs({ w: isoDate(addDays(ws, 7)) })} aria-label="Semana siguiente">›<LinkPending /></Link>
-      </div>
+        <Link className="arrow" href={qs({ w: isoDate(addDays(ws, 7)) })} aria-label="Semana siguiente"><Chevron dir="right" /><LinkPending /></Link>
+      </section>
       <Suspense key={`${isoDate(ws)}|${team}|${awayOnly}|${whiteOnly}`} fallback={<Loading />}>
         <WeekBody ws={ws} we={we} team={team} awayOnly={awayOnly} whiteOnly={whiteOnly} qs={qs} />
       </Suspense>
@@ -79,12 +80,13 @@ async function WeekBody({ ws, we, team, awayOnly, whiteOnly, qs }: { ws: LocalDa
 
   return (
     <>
-      <div className="filters">
+      <section className="filters" aria-label="Filtros">
         <TeamSelect teams={teams} value={team} />
         <Link prefetch={false} className={`chip ${awayOnly ? 'on' : ''}`} href={qs({ away: awayOnly ? null : '1' })}>Solo fuera<LinkPending /></Link>
         <Link prefetch={false} className={`chip ${whiteOnly ? 'on' : ''}`} href={qs({ white: whiteOnly ? null : '1' })}>Solo blanco<LinkPending /></Link>
-      </div>
-      <main className="wrap">
+        {!!list.length && <ShareBar text={weekSummary(list.map((x) => x.m), overrides, ws, we)} />}
+      </section>
+      <main id="main" className="wrap">
         {emptyDb ? (
           <div className="panel">
             <h2>Todavía no hay partidos guardados</h2>
@@ -101,15 +103,17 @@ async function WeekBody({ ws, we, team, awayOnly, whiteOnly, qs }: { ws: LocalDa
           <div className="empty">No hay partidos del club esta semana.</div>
         ) : (
           <>
-            <div className="stats">
-              <div><span><b>{list.length}</b> partidos</span>·<span><b>{list.length - away}</b> en casa</span>·<span><b>{away}</b> fuera</span>·<span><b>{white}</b> de blanco</span></div>
-              {!!list.length && <ShareBar text={weekSummary(list.map((x) => x.m), overrides, ws, we)} />}
-            </div>
+            <dl className="metrics">
+              <div><dt>Partidos</dt><dd>{list.length}</dd></div>
+              <div><dt>En casa</dt><dd>{list.length - away}</dd></div>
+              <div><dt>Fuera</dt><dd>{away}</dd></div>
+              <div><dt>De blanco</dt><dd>{white}</dd></div>
+            </dl>
             {!list.length && <div className="empty">Ningún partido con estos filtros.</div>}
             {list.map(({ m }) => {
               const d = parseLocal(m.local_dt);
               const day = fmtLong(d);
-              const header = day !== lastDay ? <div className="day" id={`d-${isoDate(d)}`}>{capitalize(day)}</div> : null;
+              const header = day !== lastDay ? <h2 className="day" id={`d-${isoDate(d)}`}>{capitalize(day)}</h2> : null;
               lastDay = day;
               return (
                 <div key={m.id}>

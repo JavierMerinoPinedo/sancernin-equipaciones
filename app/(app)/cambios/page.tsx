@@ -11,7 +11,7 @@ export default async function ChangesPage() {
   const rows = await loadChangeFeed(new Date(Date.now() - 21 * 864e5).toISOString().slice(0, 10));
 
   return (
-    <main className="wrap">
+    <main id="main" className="wrap">
       <p className="lede">Lo que la carga diaria ha detectado en las últimas 3 semanas: horarios, pabellones, rivales, colores y partidos nuevos o eliminados. Solo partidos de hoy en adelante.</p>
       {!rows.length && <div className="empty">Sin cambios recientes.</div>}
       {!!rows.length && <ul className="list-ch">

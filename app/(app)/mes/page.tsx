@@ -5,6 +5,7 @@ import { loadOverrides, loadRange, loadTeams } from '@/lib/data.ts';
 import { computeKit } from '@/lib/kit.ts';
 import { addDays, capitalize, isoDate, monthName, sameDay, startOfWeek, todayMadrid, type LocalDate } from '@/lib/dates.ts';
 import LinkPending from '@/components/LinkPending.tsx';
+import { Chevron } from '@/components/Figures.tsx';
 import TeamSelect from '@/components/TeamSelect.tsx';
 import Loading from '../loading.tsx';
 
@@ -25,11 +26,11 @@ export default async function MonthPage({ searchParams }: { searchParams: Promis
 
   return (
     <>
-      <div className="period">
-        <Link className="arrow" href={`/mes?m=${ym(prevMonth)}${teamQs}`} aria-label="Mes anterior">‹<LinkPending /></Link>
+      <section className="period" aria-label="Mes">
+        <Link className="arrow" href={`/mes?m=${ym(prevMonth)}${teamQs}`} aria-label="Mes anterior"><Chevron dir="left" /><LinkPending /></Link>
         <div className="lbl"><b>{capitalize(monthName(mo))} {y}</b></div>
-        <Link className="arrow" href={`/mes?m=${ym(nextMonth)}${teamQs}`} aria-label="Mes siguiente">›<LinkPending /></Link>
-      </div>
+        <Link className="arrow" href={`/mes?m=${ym(nextMonth)}${teamQs}`} aria-label="Mes siguiente"><Chevron dir="right" /><LinkPending /></Link>
+      </section>
       <Suspense key={`${y}-${mo}|${team}`} fallback={<Loading />}>
         <MonthBody y={y} mo={mo} team={team} today={today} nextMonth={nextMonth} teamQs={teamQs} />
       </Suspense>
@@ -63,9 +64,12 @@ async function MonthBody({ y, mo, team, today, nextMonth, teamQs }: { y: number;
 
   return (
     <>
-      <div className="filters"><TeamSelect teams={teams} value={team} /></div>
-      <main className="wrap">
-        <div className="stats"><div><span><b>{monthMatches.length}</b> partidos</span>·<span><b>{whiteTotal}</b> de blanco</span></div></div>
+      <section className="filters" aria-label="Filtros"><TeamSelect teams={teams} value={team} /></section>
+      <main id="main" className="wrap">
+        <dl className="metrics two">
+          <div><dt>Partidos</dt><dd>{monthMatches.length}</dd></div>
+          <div><dt>De blanco</dt><dd>{whiteTotal}</dd></div>
+        </dl>
         <div className="month">
           {['L', 'M', 'X', 'J', 'V', 'S', 'D'].map((d) => <div key={d} className="wd">{d}</div>)}
           {Array.from({ length: weeks * 7 }, (_, i) => {
@@ -75,7 +79,7 @@ async function MonthBody({ y, mo, team, today, nextMonth, teamQs }: { y: number;
             const cls = ['cell', d.m !== mo ? 'out' : '', sameDay(d, today) ? 'today' : '', e ? 'has' : ''].join(' ');
             const href = `/?w=${isoDate(startOfWeek(d))}${teamQs}#d-${k}`;
             return (
-              <Link key={k} href={href} className={cls} prefetch={false}>
+              <Link key={k} href={href} className={cls} prefetch={false} aria-label={`${d.d} de ${monthName(d.m)}: ${e ? `${e.blue + e.white} partidos` : 'sin partidos'}`}>
                 <span className="n">{d.d}</span>
                 {e?.blue ? <span className="c"><i className="d blue" />{e.blue}</span> : null}
                 {e?.white ? <span className="c"><i className="d white" />{e.white}</span> : null}

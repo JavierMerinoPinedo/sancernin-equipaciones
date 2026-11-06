@@ -5,8 +5,11 @@ import Nav from '@/components/Nav.tsx';
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   return (
     <>
-      <Nav />
-      {children}
+      <a className="skip" href="#main">Saltar al contenido</a>
+      <div className="shell">
+        <Nav />
+        {children}
+      </div>
     </>
   );
 }
